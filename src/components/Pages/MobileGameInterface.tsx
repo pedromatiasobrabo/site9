@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Volume2, VolumeX, Play, Pause, RotateCcw, Save, Calendar, Trophy, Clock, User, Gamepad2, Zap, X2, X4 } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Play, Pause, RotateCcw, Save, Calendar, Trophy, Clock, User, Gamepad2, Zap, FileX2 as X2, AArrowDown as X4 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useGameAudio } from '../../hooks/useGameAudio';
 
