@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Volume2, VolumeX, Play, Pause, RotateCcw, Save, Calendar, Trophy, Clock, User, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Play, Pause, RotateCcw, Save, Calendar, Trophy, Clock, User, Gamepad2, Zap, X2, X4 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useGameAudio } from '../../hooks/useGameAudio';
 
@@ -127,6 +127,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
   const togglePlayPause = () => {
     playButtonSound();
     setGameState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+  };
+
+  const changeGameSpeed = (speed: number) => {
+    playButtonSound();
+    setGameState(prev => ({ ...prev, gameSpeed: speed }));
   };
 
   const resetGame = () => {
@@ -266,6 +271,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
     setGameState(prev => ({ ...prev, isPlaying: true }));
   };
 
+  // Função para obter o dia da semana
+  const getDayOfWeek = (day: number) => {
+    const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    return days[(day - 1) % 7];
+  };
   // Tela de Boas-vindas
   if (showWelcome) {
     return (
@@ -345,8 +355,85 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
           ? 'bg-slate-900/95 border-slate-800' 
           : 'bg-white/95 border-emerald-200/50'
       }`}>
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
+        <div className="px-4 py-2">
+          {/* Primeira linha: Foto, Nome, Play/Pause, Mute, Save, Reset */}
+          <div className="flex items-center justify-between mb-2">
+            {/* Lado esquerdo: Foto de perfil + Nome + Controles */}
+            <div className="flex items-center gap-3">
+              {/* Foto de perfil do Alex */}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center border-2 border-emerald-400/30 shadow-md">
+                <span className="text-lg">👨‍💼</span>
+              </div>
+              
+              {/* Nome Alex */}
+              <span className={`text-sm font-bold transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-emerald-900'
+              }`}>
+                Alex
+              </span>
+              
+              {/* Botão Play/Pause */}
+              <button
+                onClick={togglePlayPause}
+                className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+                  gameState.isPlaying 
+                    ? 'bg-emerald-500/20 text-emerald-400' 
+                    : 'bg-gray-500/20 text-gray-400'
+                } ${
+                  isDark 
+                    ? 'hover:bg-slate-800' 
+                    : 'hover:bg-emerald-100'
+                }`}
+              >
+                {gameState.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </button>
+              
+              {/* Botão Mute */}
+              <button
+                onClick={toggleMute}
+                className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+                  audioSettings.isMuted 
+                    ? 'bg-red-500/20 text-red-400' 
+                    : 'bg-blue-500/20 text-blue-400'
+                } ${
+                  isDark 
+                    ? 'hover:bg-slate-800' 
+                    : 'hover:bg-emerald-100'
+                }`}
+              >
+                {audioSettings.isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </button>
+              
+              {/* Botão Save */}
+              <button
+                onClick={saveGame}
+                className={`save-button p-2 rounded-full transition-all duration-200 hover:scale-110 bg-green-500/20 text-green-400 ${
+                  isDark 
+                    ? 'hover:bg-slate-800' 
+                    : 'hover:bg-emerald-100'
+                }`}
+              >
+                <Save className="w-4 h-4" />
+              </button>
+              
+              {/* Botão Reset */}
+              <button
+                onClick={resetGame}
+                className={`p-2 rounded-full transition-all duration-200 hover:scale-110 bg-red-500/20 text-red-400 ${
+                  isDark 
+                    ? 'hover:bg-slate-800' 
+                    : 'hover:bg-emerald-100'
+                }`}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Lado direito: Botão de voltar */}
             <button
               onClick={onBack}
               className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
@@ -357,58 +444,81 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-
-            {/* Game Time Display */}
+          </div>
+          
+          {/* Segunda linha: Dia da semana, Pontuação, Velocidade do tempo */}
+          <div className="flex items-center justify-between">
+            {/* Lado esquerdo: Dia da semana */}
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors duration-300 ${
               isDark 
                 ? 'bg-slate-800/50 text-white' 
                 : 'bg-emerald-100/80 text-emerald-900'
             }`}>
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
-              <span className={`text-xs sm:text-sm font-medium transition-colors duration-300 ${
+              <Calendar className="w-4 h-4 text-emerald-400" />
+              <span className={`text-sm font-medium transition-colors duration-300 ${
                 isDark ? 'text-white' : 'text-emerald-900'
               }`}>
-                Dia {gameState.day}
-              </span>
-              <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400 ml-2" />
-              <span className={`text-xs sm:text-sm font-medium transition-colors duration-300 ${
-                isDark ? 'text-white' : 'text-emerald-900'
-              }`}>
-                {formatGameTime(gameState.hour, gameState.minute)}
+                {getDayOfWeek(gameState.day)}
               </span>
             </div>
-
-            {/* Game Controls */}
-            <div className="flex items-center gap-2">
+            
+            {/* Centro: Pontuação geral total */}
+            <div className={`flex items-center gap-2 px-4 py-1 rounded-full transition-colors duration-300 ${
+              isDark 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'bg-emerald-500/20 text-emerald-600'
+            }`}>
+              <Trophy className="w-4 h-4 text-emerald-400" />
+              <span className={`text-sm font-bold transition-colors duration-300 ${
+                isDark ? 'text-emerald-400' : 'text-emerald-600'
+              }`}>
+                {gameState.totalScore} pts
+              </span>
+            </div>
+            
+            {/* Lado direito: Controles de velocidade */}
+            <div className="flex items-center gap-1">
               <button
-                onClick={toggleMute}
-                className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                  isDark 
-                    ? 'hover:bg-slate-800 text-white' 
-                    : 'hover:bg-emerald-100 text-emerald-900'
+                onClick={() => changeGameSpeed(1)}
+                className={`px-2 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
+                  gameState.gameSpeed === 1
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : isDark
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
                 }`}
               >
-                {audioSettings.isMuted ? (
-                  <VolumeX className="w-4 h-4" />
-                ) : (
-                  <Volume2 className="w-4 h-4" />
-                )}
+                1x
               </button>
-
               <button
-                onClick={togglePlayPause}
-                className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                  isDark 
-                    ? 'hover:bg-slate-800 text-white' 
-                    : 'hover:bg-emerald-100 text-emerald-900'
+                onClick={() => changeGameSpeed(2)}
+                className={`px-2 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
+                  gameState.gameSpeed === 2
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : isDark
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
                 }`}
               >
-                {gameState.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                2x
+              </button>
+              <button
+                onClick={() => changeGameSpeed(4)}
+                className={`px-2 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
+                  gameState.gameSpeed === 4
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : isDark
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
+                }`}
+              >
+                4x
               </button>
             </div>
           </div>
         </div>
       </header>
+
 
       {/* Stats Bar */}
       <div className={`px-4 py-3 border-b transition-colors duration-300 ${
@@ -640,29 +750,25 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         </div>
 
         {/* Floating Controls */}
-        <div className="fixed top-16 right-4 z-50">
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={saveGame}
-              className={`save-button p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                isDark 
-                  ? 'bg-slate-800/80 hover:bg-slate-700 text-white' 
-                  : 'bg-white/90 hover:bg-gray-100 text-gray-900 border border-gray-200/50'
-              }`}
-            >
-              <Save className="w-4 h-4" />
-            </button>
-            
-            <button
-              onClick={resetGame}
-              className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                isDark 
-                  ? 'bg-slate-800/80 hover:bg-slate-700 text-white' 
-                  : 'bg-white/90 hover:bg-gray-100 text-gray-900 border border-gray-200/50'
-              }`}
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+        <div className="fixed top-20 right-4 z-50">
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-300 ${
+            isDark 
+              ? 'bg-slate-800/90 text-white' 
+              : 'bg-white/90 text-emerald-900 border border-emerald-200/50'
+          }`}>
+            <Clock className="w-4 h-4 text-emerald-400" />
+            <span className={`text-sm font-medium transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-emerald-900'
+            }`}>
+              {formatGameTime(gameState.hour, gameState.minute)}
+            </span>
+            <span className={`text-xs px-2 py-1 rounded-full transition-colors duration-300 ${
+              isDark 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'bg-emerald-500/20 text-emerald-600'
+            }`}>
+              Dia {gameState.day}
+            </span>
           </div>
         </div>
       </div>
@@ -746,19 +852,21 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         </div>
 
         {/* Time Speed Indicator */}
-        <div className="mt-2 flex items-center justify-center">
-          <div className={`px-3 py-1 rounded-full text-xs transition-colors duration-300 ${
-            isDark 
-              ? 'bg-emerald-500/20 text-emerald-400' 
-              : 'bg-emerald-500/20 text-emerald-600'
-          }`}>
-            <p className={`text-xs transition-colors duration-300 ${
-              isDark ? 'text-emerald-400' : 'text-emerald-600'
+        {gameState.gameSpeed > 1 && (
+          <div className="mt-2 flex items-center justify-center">
+            <div className={`px-3 py-1 rounded-full text-xs transition-colors duration-300 ${
+              isDark 
+                ? 'bg-yellow-500/20 text-yellow-400' 
+                : 'bg-yellow-500/20 text-yellow-600'
             }`}>
-              ⏰ 1 segundo real = 15 minutos no jogo
-            </p>
+              <p className={`text-xs font-medium transition-colors duration-300 ${
+                isDark ? 'text-yellow-400' : 'text-yellow-600'
+              }`}>
+                ⚡ Velocidade {gameState.gameSpeed}x ativa
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
